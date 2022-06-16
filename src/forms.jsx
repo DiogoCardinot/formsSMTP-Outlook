@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import axios from "axios";
-import loadingImage from "./images/loading.png";
+// import loadingImage from "./images/loading.png";
 import "./forms.css";
 import Console from "./form.jsx";
 
@@ -13,13 +13,49 @@ export default function Form() {
     assunto: "",
     anexo: "",
   });
-  const button = document.querySelector(".submitButton");
-  function removeLoad() {
-    button.innerHTML = "ENVIAR";
+  function verifyInputs(event) {
+    const emailTest = /^\S+@\S+\.\S+$/;
+    const nome = document.querySelector("#nome");
+    const email = document.querySelector("#email");
+    // NOME
+    if (event.target.name === "nome" && event.target.value !== "") {
+      console.log("NomePreenchido");
+      nome.classList.remove("invalid");
+      nome.nextElementSibling.classList.remove("invalid");
+    }
+    if (event.target.name === "nome" && event.target.value === "") {
+      console.log("NomeVazio");
+      nome.classList.add("invalid");
+      nome.nextElementSibling.classList.add("invalid");
+    }
+    // EMAIL
+    if (
+      event.target.name === "email" &&
+      event.target.value !== "" &&
+      !emailTest.test(event.target.value)
+    ) {
+      console.log("Email Incorreto");
+      email.classList.add("invalid");
+      email.nextElementSibling.innerHTML = "Formato Inválido";
+      email.nextElementSibling.classList.add("invalid");
+    }
+    if (event.target.name === "email" && event.target.value === "") {
+      console.log("Email Vazio");
+      email.classList.add("invalid");
+      email.nextElementSibling.innerHTML = "Campo Obrigatório";
+      email.nextElementSibling.classList.add("invalid");
+    }
+    if (
+      event.target.name === "email" &&
+      event.target.value !== "" &&
+      emailTest.test(event.target.value)
+    ) {
+      console.log("Email Correto");
+      email.classList.remove("invalid");
+      email.nextElementSibling.classList.remove("invalid");
+    }
   }
-  function addLoad() {
-    button.innerHTML = "Sandro";
-  }
+
   function handleInputChange(event) {
     if (event.target.name === "anexo")
       campos[event.target.name] = event.target.files[0];
@@ -30,11 +66,11 @@ export default function Form() {
   function handleFormSubmit(event) {
     event.preventDefault();
     console.log(campos);
+
     send();
   }
 
   function send() {
-    addLoad();
     const formData = new FormData();
     Object.keys(campos).forEach((key) => formData.append(key, campos[key]));
     axios
@@ -43,8 +79,7 @@ export default function Form() {
           "Content-Type": `multipart/form-data; boundary=${formData._boundary}`, //se for enviar só json pode usar 'application/json' como vamos enviar anexos utiliza esse multipart
         },
       }) //mudar esse /send para a url do servidor do backend, nesse caso, como o back está junto com o front usa o mesmo nome
-      .then((response) => alert(JSON.stringify(response.data)))
-      .then(() => removeLoad);
+      .then((response) => alert(JSON.stringify(response.data)));
   }
   return (
     <form onSubmit={handleFormSubmit}>
@@ -58,7 +93,9 @@ export default function Form() {
             name="email"
             placeholder="Seu e-mail"
             onChange={handleInputChange}
+            onBlur={verifyInputs}
           />
+          <span className="invalidText">Campo Obrigatóio</span>
         </div>
 
         <div className="inputs-wrapper">
@@ -71,6 +108,7 @@ export default function Form() {
             placeholder="Seu nome"
             onChange={handleInputChange}
           />
+          <span className="invalidText">Campo Obrigatóio</span>
         </div>
 
         <div className="inputs-wrapper">
